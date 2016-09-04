@@ -9,6 +9,8 @@ namespace WeatherApp.Core
 
             TaskCompletionSource<Weather> TCS = new TaskCompletionSource<Weather>();
 
+            
+
             string queryString =
                 "https://query.yahooapis.com/v1/public/yql?q=select+*+from+weather.forecast+where+woeid+in+(select+woeid+from+geo.places(1)+where+text='" +
                  zipCode + "')&format=json";
@@ -46,7 +48,13 @@ namespace WeatherApp.Core
                     TCS.SetResult(null);
                 }
 
-            });
+            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+
+            task.ContinueWith(t =>
+            {
+                TCS.SetException(new System.Exception(t.Exception.InnerException.Message));
+
+            }, TaskContinuationOptions.OnlyOnFaulted);
 
             return TCS.Task;
         }

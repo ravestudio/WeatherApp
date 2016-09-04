@@ -29,9 +29,20 @@ namespace WeatherApp.UWP
             this.InitializeComponent();
         }
 
-        private void GetWeatherButton_Click(object sender, RoutedEventArgs e)
+        private async void GetWeatherButton_Click(object sender, RoutedEventArgs e)
         {
-            Weather weather = Core.Core.GetWeather(ZipCodeEdit.Text).Result;
+            Weather weather = null;
+            string errMsg = string.Empty;
+            try
+            {
+                weather = await Core.Core.GetWeather(ZipCodeEdit.Text);
+            }
+            catch(Exception ex)
+            {
+                errMsg = ex.Message;
+
+            }
+
             if (weather != null)
             {
                 ResultsTitle.Text = weather.Title;
@@ -47,7 +58,9 @@ namespace WeatherApp.UWP
             }
             else
             {
-                ResultsTitle.Text = "Couldn't find any results";
+                errMsg = string.IsNullOrEmpty(errMsg) ? "Couldn't find any results" : errMsg;
+
+                ResultsTitle.Text = errMsg;
             }
         }
 

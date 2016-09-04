@@ -11,7 +11,9 @@ namespace WeatherApp.Core
         {
             TaskCompletionSource<dynamic> TCS = new TaskCompletionSource<dynamic>();
 
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(queryString);
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new System.Uri(queryString));
+            request.ContentType = "application/json";
+            request.Method = "GET";
 
             var response = request.GetResponseAsync();
 
@@ -25,7 +27,13 @@ namespace WeatherApp.Core
                 dynamic data = JsonConvert.DeserializeObject(responseText);
 
                 TCS.SetResult(data);
-            });
+            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+
+            response.ContinueWith(t =>
+            {
+                TCS.SetException(new System.Exception(t.Exception.InnerException.Message));
+
+            }, TaskContinuationOptions.OnlyOnFaulted);
 
             return TCS.Task;
         }

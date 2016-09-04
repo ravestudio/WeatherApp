@@ -25,11 +25,22 @@ namespace WeatherApp
 
             Button button = FindViewById<Button>(Resource.Id.GetWeatherButton);
 
-            button.Click += delegate
+            button.Click += async delegate
             {
                 EditText ZipCodeEditText = FindViewById<EditText>(Resource.Id.ZipCodeEdit);
 
-                Weather weather = Core.Core.GetWeather(ZipCodeEditText.Text).Result;
+                Weather weather = null;
+
+                string errMsg = string.Empty;
+
+                try
+                {
+                    weather = await Core.Core.GetWeather(ZipCodeEditText.Text);
+                }
+                catch(Exception ex)
+                {
+                    errMsg = ex.Message;
+                }
 
                 if (weather != null)
                 {
@@ -45,7 +56,9 @@ namespace WeatherApp
                 }
                 else
                 {
-                    FindViewById<TextView>(Resource.Id.ResultsTitle).Text = "Couldn't find any results";
+                    errMsg = string.IsNullOrEmpty(errMsg) ? "Couldn't find any results" : errMsg;
+
+                    FindViewById<TextView>(Resource.Id.ResultsTitle).Text = errMsg;
                 }
 
             };
